@@ -518,6 +518,24 @@ The Contribution Differentielle sur les Hauts Revenus is quite complex to comput
 ## Pre-requisites for CDHR computation
 
 ```python
+def incomeTaxes2025(current_sum, gain_acq_imposable):
+    tranches = [(0.0, 0.0, 11_600.0), (0.11, 11_601.0, 29_579.0), (0.30, 29_580.0, 84_577.0), (0.41, 84_578.0, 181_917.0), (0.45,  181_918.0,
+sys.maxsize)]
+    to_process = gain_acq_imposable
+    impot = 0
+    for k in tranches:
+        (k, minval, maxval) = k
+        a_imposer = 0
+        if current_sum <= maxval:
+            if (current_sum + to_process) <= maxval:
+                a_imposer = to_process
+            else:
+                a_imposer = maxval-current_sum
+            to_process = to_process - a_imposer
+            impot = impot + (a_imposer * k)
+            current_sum += a_imposer
+    return impot
+
 def computeTaxesForCDHR(
     INCOME_TAXES: float,
     var_3VG: float,
@@ -574,39 +592,39 @@ They have a **capital gains** of **18_602_800 euros** (**3VG**).
 
 ```python
 var_1AJ = 10_000
-var_1TT = 89_300
 var_1BJ = 0
+var_1TT = 89_300
 var_1UT = 0
 var_1TZ = 133_950
 var_1UZ = 89_300
 var_1WZ = 44_650
-var_3VG = 18_602_800
 var_2DC = 0
 var_2TR = 0
+var_3VG = 18_602_800
 var_6DE = 0
 tax_shares = 2.0
-MAX_10PERCENT_DEDUCTION = 14_426
-MIN_10PERCENT_DEDUCTION = 504
-DEDUCTION1 = min(MAX_10PERCENT_DEDUCTION, max(roundu((var_1AJ + var_1TT) * 0.10), \
+MAX_10PERCENT_DEDUCTION = 14_555.0
+MIN_10PERCENT_DEDUCTION = 509.0
+DEDUCTION1 = min(MAX_10PERCENT_DEDUCTION, max(round((var_1AJ + var_1TT) * 0.10), \
     MIN_10PERCENT_DEDUCTION if (var_1AJ + var_1TT) >= MIN_10PERCENT_DEDUCTION else (var_1AJ + var_1TT)))
-DEDUCTION2 = min(MAX_10PERCENT_DEDUCTION, max(roundu((var_1BJ + var_1UT) * 0.10), \
+DEDUCTION2 = min(MAX_10PERCENT_DEDUCTION, max(round((var_1BJ + var_1UT) * 0.10), \
     MIN_10PERCENT_DEDUCTION if (var_1BJ + var_1UT) >= MIN_10PERCENT_DEDUCTION else (var_1BJ + var_1UT)))
 INCOME = var_1AJ + var_1TT - DEDUCTION1 +  var_1BJ + var_1UT  - DEDUCTION2 + var_1TZ - var_6DE
-RFR = INCOME + var_1UZ + var_1WZ + var_3VG  # 18960070
+RFR = INCOME + var_1UZ + var_1WZ + var_3VG # 18960070
 RFR_AUTONOME = INCOME + var_1UZ + var_3VG  # 18915420
 ```
 
 ### Total Taxes
 
 ```python
-CRDS_CSG = roundu((var_1TZ + var_1UZ + var_1WZ + var_3VG + var_2DC + var_2TR) * 0.097)
+CRDS_CSG = roundu((var_1TZ + var_1UZ + var_1WZ + var_3VG + var_2DC + var_2TR) * 0.111)
 CRDS =  roundu((var_1TT + var_1UT) * 0.005)
 CSG =  roundu((var_1TT + var_1UT) * 0.092)
 EMPLOYEE_CONTRIBUTION_TAXES  = roundu((var_1TT + var_1UT) * 0.10)
 PRELEVEMENT_SOLIDARITES =  roundu((var_1TZ + var_1UZ + var_1WZ + var_3VG + var_2DC + var_2TR) * 0.075)
 CAPITAL_GAINS_INCOME_TAXES = roundu((var_3VG + var_2DC + var_2TR)*0.128)
 CEHR_TAXES = computeCEHRTaxes(RFR, tax_shares) # 733403
-INCOME_TAXES = roundu(incomeTaxes(0, INCOME/2.0) * 2.0)
+INCOME_TAXES = roundu(incomeTaxes2025(0, INCOME/2.0) * 2.0)
 TAXES = INCOME_TAXES + \
     CRDS_CSG + \
     CRDS + \
@@ -614,9 +632,9 @@ TAXES = INCOME_TAXES + \
     EMPLOYEE_CONTRIBUTION_TAXES + \
     PRELEVEMENT_SOLIDARITES + \
     CAPITAL_GAINS_INCOME_TAXES + \
-    CEHR_TAXES  # 6437366
+    CEHR_TAXES  # 6701267
 TAXES_FOR_CDHR = computeTaxesForCDHR(INCOME_TAXES, var_3VG, var_2DC, var_2TR, CEHR_TAXES, RFR_AUTONOME, tax_shares)
 (CDHR_TAXES, TAUX_IMPOSITION_MOYEN) = computeCDHRTaxes(TAXES_FOR_CDHR, RFR_AUTONOME, tax_shares) # (596572, 16.8)
-TOTAL_TAXES = TAXES + CDHR_TAXES # 7033938
+TOTAL_TAXES = TAXES + CDHR_TAXES # 7298128
 ```
 
