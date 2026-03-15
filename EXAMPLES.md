@@ -535,7 +535,9 @@ sys.maxsize)]
             impot = impot + (a_imposer * k)
             current_sum += a_imposer
     return impot
+```
 
+```python
 def computeTaxesForCDHR(
     INCOME_TAXES: float,
     var_3VG: float,
